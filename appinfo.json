@@ -10,6 +10,11 @@
         "media": [
             {
                 "file": "fonts/imagine.ttf",
+                "name": "FONT_IMAGINE_18",
+                "type": "font"
+            },
+            {
+                "file": "fonts/imagine.ttf",
                 "name": "FONT_IMAGINE_38",
                 "type": "font"
             }
