@@ -7,7 +7,6 @@ static GFont time_font;
 static GFont date_font;
 
 static void update_time(struct tm *tick_time);
-static void update_date(struct tm *tick_time);
 static void window_load(Window *window);
 static void window_unload(Window *window);
 static void initialise();
@@ -20,10 +19,15 @@ static void update_time(struct tm *tick_time) {
 	text_layer_set_text(time_layer, time_buffer);
 }
 
-static void update_date(struct tm *tick_time) {
+void update_date(struct tm *tick_time) {
 	static char date_buffer[] = "MON 11 JAN";
-	strftime(date_buffer, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
-	text_layer_set_text(date_layer, date_buffer);
+	uint8_t date_setting = get_setting(SETTING_DATE);
+	if (date_setting == 0) text_layer_set_text(date_layer, " ");
+	else {
+		if (date_setting == 1) strftime(date_buffer, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
+		else strftime(date_buffer, sizeof("MON JAN 11"), "%a %b %e", tick_time);
+		text_layer_set_text(date_layer, date_buffer);
+	}
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
@@ -61,6 +65,7 @@ static void window_unload(Window *window) {
 }
 
 static void initialise() {
+	sync_settings();
 	window = window_create();
 	window_set_window_handlers(window, (WindowHandlers) {
 		.load = window_load,
@@ -73,6 +78,7 @@ static void initialise() {
 static void cleanup() {
 	tick_timer_service_unsubscribe();
 	window_destroy(window);
+	save_settings();
 }
 
 int main(void) {

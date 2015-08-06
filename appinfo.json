@@ -1,7 +1,9 @@
 {
-    "appKeys": {},
+    "appKeys": {
+        "date": 0
+    },
     "capabilities": [
-        ""
+        "configurable"
     ],
     "companyName": "Daniel Vogelnest",
     "longName": "Flux",
@@ -27,8 +29,8 @@
         "basalt"
     ],
     "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
-    "versionLabel": "0.1",
+    "versionLabel": "0.3",
     "watchapp": {
-        "watchface": false
+        "watchface": true
     }
 }
