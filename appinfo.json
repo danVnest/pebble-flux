@@ -19,13 +19,17 @@
                 "file": "fonts/imagine.ttf",
                 "name": "FONT_IMAGINE_38",
                 "type": "font"
+            },
+            {
+                "file": "fonts/imagine.ttf",
+                "name": "FONT_IMAGINE_46",
+                "type": "font"
             }
         ]
     },
     "sdkVersion": "3",
     "shortName": "Flux",
     "targetPlatforms": [
-        "aplite",
         "basalt"
     ],
     "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
