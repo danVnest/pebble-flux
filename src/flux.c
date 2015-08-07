@@ -1,6 +1,7 @@
 #include "flux.h"
 
 static Window *window;
+static Layer *background_layer;
 static TextLayer *time_layer;
 static TextLayer *date_layer;
 static GFont time_font;
@@ -11,7 +12,7 @@ static void window_load(Window *window);
 static void window_unload(Window *window);
 static void initialise();
 static void cleanup();	
-	
+
 static void update_time(struct tm *tick_time) {
 	static char time_buffer[] = "00:00";
 	if(clock_is_24h_style() == false) strftime(time_buffer, sizeof("00:00"), "%l:%M", tick_time);
@@ -37,8 +38,12 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 
 static void window_load(Window *window) {
 	window_set_background_color(window, GColorBlack);
+	background_layer = layer_create(GRect(0, 0, 144, 168));
+	layer_set_update_proc(background_layer, draw_nodes);
+	create_nodes();
+	layer_add_child(window_get_root_layer(window), background_layer);
 	time_layer = text_layer_create(GRect(0, 54, 144, 40));
-	date_layer = text_layer_create(GRect(0, 94, 144, 20));
+	date_layer = text_layer_create(GRect(0, 140, 144, 20));
 	time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMAGINE_38));
 	date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMAGINE_18));
 	text_layer_set_font(time_layer, time_font);
