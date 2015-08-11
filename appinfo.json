@@ -12,17 +12,12 @@
         "media": [
             {
                 "file": "fonts/imagine.ttf",
-                "name": "FONT_IMAGINE_18",
-                "type": "font"
-            },
-            {
-                "file": "fonts/imagine.ttf",
                 "name": "FONT_IMAGINE_38",
                 "type": "font"
             },
             {
                 "file": "fonts/imagine.ttf",
-                "name": "FONT_IMAGINE_46",
+                "name": "FONT_IMAGINE_18",
                 "type": "font"
             }
         ]
@@ -33,7 +28,7 @@
         "basalt"
     ],
     "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
-    "versionLabel": "0.3",
+    "versionLabel": "0.4",
     "watchapp": {
         "watchface": true
     }
