@@ -30,19 +30,19 @@ void update_date(struct tm *tick_time) {
 
 void draw_text(Layer *layer, GContext *ctx) {
 	graphics_context_set_text_color(ctx, GColorBlack);
-	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 - 3, 138, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 + 3, 138, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(6, 54 - 3, 138, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(6, 54 + 3, 138, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	if (get_setting(SETTING_DATE) != 0) {
-		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 - 2, 140, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 + 2, 140, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(4, 140 - 2, 140, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(4, 140 + 2, 140, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	}	
 	graphics_context_set_text_color(ctx, GColorWhite);
-	graphics_draw_text(ctx, time_text, time_font, GRect(3, 54, 138, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (get_setting(SETTING_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(2, 140, 140, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(2, 54, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	if (get_setting(SETTING_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {

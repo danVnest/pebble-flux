@@ -7,7 +7,7 @@
 #define PIXELS_MAX 8
 #define PIXELS_MIN 4
 #define NODE_SIZE_MAX (2 * INT_PRECISION)
-#define FRAMES_PER_ANIMATION 30
+#define FRAMES_PER_ANIMATION 30 
 
 struct Node {
 	int x;
@@ -34,12 +34,12 @@ void create_nodes() {
 void draw_nodes(Layer *layer, GContext* ctx) {
 	graphics_context_set_fill_color(ctx, GColorWhite);
 	graphics_context_set_stroke_color(ctx, GColorBlack);
-	graphics_context_set_stroke_width(ctx, 3);
+	graphics_context_set_stroke_width(ctx, 1);
 	for(int i = 0; i < NODE_COUNT; i++) {
 		int node_x = nodes[i].x / INT_PRECISION;
 		int node_y = nodes[i].y / INT_PRECISION;
 		int node_size = nodes[i].size * PIXELS_MAX / NODE_SIZE_MAX + PIXELS_MIN;
-		graphics_draw_rect(ctx, GRect(node_x, node_y, node_size, node_size));
+		graphics_draw_rect(ctx, GRect(node_x - 1, node_y - 1, node_size + 2, node_size + 2));
 		graphics_fill_rect(ctx, GRect(node_x, node_y, node_size, node_size), 0, GCornerNone);
 	}
 }
@@ -62,6 +62,10 @@ static void animate_nodes() {
 		nodes[i].size += node_changes[i].size;
 		nodes[i].x += node_changes[i].x - node_changes[i].size;
 		nodes[i].y += node_changes[i].y - node_changes[i].size;
+		if ((nodes[i].x < 0) && (node_changes[i].x < 0)) node_changes[i].x *= -1;
+		else if ((nodes[i].x > X_MAX) && (node_changes[i].x > 0)) node_changes[i].x *= -1;
+		if ((nodes[i].y < 0) && (node_changes[i].y < 0)) node_changes[i].y *= -1;
+		else if ((nodes[i].y > Y_MAX) && (node_changes[i].y > 0)) node_changes[i].y *= -1;
 	}
 	if (frameNumber++ < FRAMES_PER_ANIMATION) animation_timer = app_timer_register(delta, animate_nodes, NULL);
 	background_layer_mark_dirty();
