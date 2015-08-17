@@ -3,8 +3,8 @@ Pebble.addEventListener('ready', function(e) {
 });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-	Pebble.openURL('https://rawgit.com/danVnest/Flux/master/FluxConfig.html');
-	// TODO: for production use https://cdn.rawgit.com/danVnest/Flux/[ current hash ]/FluxConfig.html
+	Pebble.openURL('https://rawgit.com/danVnest/Flux/master/config/index.html');
+	// TODO: for production use https://cdn.rawgit.com/danVnest/Flux/[ current hash ]/config/index.html
 });
 
 Pebble.addEventListener("webviewclosed", function(e){

@@ -18,14 +18,12 @@ static void update_time(struct tm *tick_time) {
 	if(clock_is_24h_style() == false) strftime(time_text, sizeof("00:00"), "%l:%M", tick_time);
 	else strftime(time_text, sizeof("00:00"), "%k:%M", tick_time);
 	layer_mark_dirty(text_layer);
-	APP_LOG(APP_LOG_LEVEL_INFO, "time change");
 }
 
 void update_date(struct tm *tick_time) {
-	if (get_setting(SETTING_DATE) == 1) strftime(date_text, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
-	else if (get_setting(SETTING_DATE) == 2) strftime(date_text, sizeof("MON JAN 11"), "%a %b %e", tick_time);
+	if (get_setting(SETTING_DISPLAY_DATE) == 1) strftime(date_text, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
+	else if (get_setting(SETTING_DISPLAY_DATE) == 2) strftime(date_text, sizeof("MON JAN 11"), "%a %b %e", tick_time);
 	update_time(tick_time);
-	APP_LOG(APP_LOG_LEVEL_INFO, "date change");
 }
 
 void draw_text(Layer *layer, GContext *ctx) {
@@ -34,7 +32,7 @@ void draw_text(Layer *layer, GContext *ctx) {
 	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (get_setting(SETTING_DATE) != 0) {
+	if (get_setting(SETTING_DISPLAY_DATE) != 0) {
 		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
@@ -42,14 +40,12 @@ void draw_text(Layer *layer, GContext *ctx) {
 	}	
 	graphics_context_set_text_color(ctx, GColorWhite);
 	graphics_draw_text(ctx, time_text, time_font, GRect(2, 54, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (get_setting(SETTING_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	if (get_setting(SETTING_DISPLAY_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 	if (units_changed & DAY_UNIT) update_date(tick_time);
 	else update_time(tick_time);
-	begin_animating_nodes();
-	APP_LOG(APP_LOG_LEVEL_INFO, "tick");
 }
 
 void background_layer_mark_dirty() {
@@ -89,6 +85,7 @@ static void initialise() {
 	});
 	tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
 	window_stack_push(window, true);
+	sync_animations();
 }
 
 static void cleanup() {

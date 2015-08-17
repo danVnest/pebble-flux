@@ -1,6 +1,17 @@
 {
     "appKeys": {
-        "date": 0
+        "pattern-change": 0,
+        "pattern-nodes": 1,
+        "pattern-fractal": 2,
+		"animations-frequency": 3,
+		"animations-duration": 4,
+		"colours-bright": 5,
+		"colours-soft": 6,
+		"power-start": 7,
+		"power-end": 8,
+		"power-threshold": 9,
+		"inactivity-period": 10,
+		"display-date": 11
     },
     "capabilities": [
         "configurable"
@@ -10,6 +21,12 @@
     "projectType": "native",
     "resources": {
         "media": [
+		    {
+		      "file": "menu_icon.png",
+		      "name": "IMAGE_MENU_ICON",
+		      "type": "png",
+		      "menuIcon": true
+		    },
             {
                 "file": "fonts/imagine.ttf",
                 "name": "FONT_IMAGINE_38",
@@ -28,7 +45,7 @@
         "basalt"
     ],
     "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
-    "versionLabel": "0.5",
+    "versionLabel": "0.6",
     "watchapp": {
         "watchface": true
     }

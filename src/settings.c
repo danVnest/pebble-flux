@@ -14,9 +14,39 @@ uint8_t get_setting(int key) {
 void sync_settings() {
 	size_t stored_byte_count = persist_get_size(STORAGE_SETTINGS);
 	if (stored_byte_count == sizeof(settings)) persist_read_data(STORAGE_SETTINGS, settings, stored_byte_count);
-	else settings[SETTING_DATE] = 1;
+	else {
+		settings[SETTING_PATTERN_CHANGE] = 3;
+		settings[SETTING_PATTERN_NODES] = 1;
+		settings[SETTING_PATTERN_FRACTAL] = 1;
+		settings[SETTING_ANIMATIONS_FREQUENCY] = 4;
+		settings[SETTING_ANIMATIONS_DURATION] = 3;
+		settings[SETTING_COLOURS_BRIGHT] = 1;
+		settings[SETTING_COLOURS_SOFT] = 1;
+		settings[SETTING_POWER_START_HOUR] = 22;
+		settings[SETTING_POWER_START_MINUTE] = 0;
+		settings[SETTING_POWER_END_HOUR] = 7;
+		settings[SETTING_POWER_END_MINUTE] = 0;
+		settings[SETTING_POWER_THRESHOLD] = 30;
+		settings[SETTING_INACTIVITY_PERIOD] = 3;
+		settings[SETTING_DISPLAY_DATE] = 1;
+	}
 	app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-	Tuplet settings_sync[] = { TupletInteger(SETTING_DATE, settings[SETTING_DATE]) };
+	Tuplet settings_sync[] = {
+		TupletInteger(SETTING_PATTERN_CHANGE, settings[SETTING_PATTERN_CHANGE]),
+		TupletInteger(SETTING_PATTERN_NODES, settings[SETTING_PATTERN_NODES]),
+		TupletInteger(SETTING_PATTERN_FRACTAL, settings[SETTING_PATTERN_FRACTAL]),
+		TupletInteger(SETTING_ANIMATIONS_FREQUENCY, settings[SETTING_ANIMATIONS_FREQUENCY]),
+		TupletInteger(SETTING_ANIMATIONS_DURATION, settings[SETTING_ANIMATIONS_DURATION]),
+		TupletInteger(SETTING_COLOURS_BRIGHT, settings[SETTING_COLOURS_BRIGHT]),
+		TupletInteger(SETTING_COLOURS_SOFT, settings[SETTING_COLOURS_SOFT]),
+		TupletInteger(SETTING_POWER_START_HOUR, settings[SETTING_POWER_START_HOUR]),
+		TupletInteger(SETTING_POWER_START_MINUTE, settings[SETTING_POWER_START_MINUTE]),
+		TupletInteger(SETTING_POWER_END_HOUR, settings[SETTING_POWER_END_HOUR]),
+		TupletInteger(SETTING_POWER_END_MINUTE, settings[SETTING_POWER_END_MINUTE]),
+		TupletInteger(SETTING_POWER_THRESHOLD, settings[SETTING_POWER_THRESHOLD]),
+		TupletInteger(SETTING_INACTIVITY_PERIOD, settings[SETTING_INACTIVITY_PERIOD]),
+		TupletInteger(SETTING_DISPLAY_DATE, settings[SETTING_DISPLAY_DATE])
+	};
 	app_sync_init(&app_sync, sync_buffer, sizeof(sync_buffer), settings_sync, ARRAY_LENGTH(settings_sync), sync_changed_handler, sync_error_handler, NULL);
 }
 
@@ -28,7 +58,21 @@ void save_settings() {
 static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, const Tuple *old_tuple, void *context) {
 	if (settings[key] != new_tuple->value->uint8) {
 		settings[key] = new_tuple->value->uint8;
-		if (key == SETTING_DATE) {
+		if (key == SETTING_ANIMATIONS_FREQUENCY) {
+			if (settings[key] == 0) set_animation_frequency(0xFFFF);
+			else if (settings[key] == 1) set_animation_frequency(1);
+			else if (settings[key] == 2) set_animation_frequency(15);
+			else if (settings[key] == 3) set_animation_frequency(30);
+			else if (settings[key] == 4) set_animation_frequency(60);
+			else if (settings[key] == 5) set_animation_frequency(900);
+			else if (settings[key] == 6) set_animation_frequency(1800);
+			else if (settings[key] == 7) set_animation_frequency(3600);
+			else if (settings[key] == 8) set_animation_frequency(0); 
+		}
+		else if (key == SETTING_ANIMATIONS_DURATION) {
+			set_frames_per_animation(settings[key]);
+		}
+		else if (key == SETTING_DISPLAY_DATE) {
 			time_t raw_time = time(NULL);
 			struct tm *tick_time = localtime(&raw_time);
 			update_date(tick_time);

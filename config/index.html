@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport">
+		<title>Flux</title>
+		<link rel="stylesheet" href="css/slate.css">
+	</head>
+	<body>
+		<form id="main-form">
+			<div class="item-container">
+				<div class="item-container-header">Patterns</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Change Frequency
+						<div class="item-subtitle">How often the background will change betwen the patterns below.</div>
+						<select name="pattern-change" class="item-select">
+							<option class="item-select-option" value="0" selected>Every minute</option>
+							<option class="item-select-option" value="1">15 minutes</option>
+							<option class="item-select-option" value="2">30 minutes</option>
+							<option class="item-select-option" value="3">1 hour</option>
+							<option class="item-select-option" value="4">1 day</option>
+							<option class="item-select-option" value="5">Never</option>
+						</select>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Nodes
+						<div class="item-subtitle">Interconnected squares that move around and change size.</div>
+						<input name="pattern-nodes" type="checkbox" class="item-toggle" checked>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Fractal
+						<div class="item-subtitle">Exponentially branching pattern.</div>
+						<input name="pattern-fractal" type="checkbox" class="item-toggle" checked>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					If no patterns are enabled, the background will be blank.
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="item-container-header">Animations</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Frequency
+						<div class="item-subtitle">How often an animation occurs.</div>
+						<select name="animations-frequency" class="item-select">
+							<option class="item-select-option" value="0" selected>Constant</option>
+							<option class="item-select-option" value="1">Every second</option>
+							<option class="item-select-option" value="2">15 seconds</option>
+							<option class="item-select-option" value="3">30 seconds</option>
+							<option class="item-select-option" value="4">1 minute</option>
+							<option class="item-select-option" value="5">15 minutes</option>
+							<option class="item-select-option" value="6">30 minutes</option>
+							<option class="item-select-option" value="7">1 hour</option>
+							<option class="item-select-option" value="8">Never</option>
+						</select>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Duration (s)
+						<div class="item-subtitle">How long each animation goes for (in seconds).</div>
+					</label>
+					<label class="item">
+						<input name="animations-duration" type="range" class="item-slider" value="0.5" min="0" max="1" step="0.1">
+						<div class="item-input-wrapper item-slider-text">
+							<input name="animations-duration" type="text" class="item-input" value="0.5">
+						</div>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					The lower the Frequency and Duration values, the more battery life you will have.
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="item-container-header">Colours</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Bright
+						<div class="item-subtitle">Bright colours.</div>
+						<input name="colours-bright" type="checkbox" class="item-toggle" checked>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Soft
+						<div class="item-subtitle">Soft colours.</div>
+						<input name="colours-soft" type="checkbox" class="item-toggle" checked>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					Disabling all colours will result in a black and white watchface.
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="item-container-header">Low Power Mode</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Start Time
+						<div class="item-subtitle">No animations occur after this time.</div>
+						<input name="power-start" type="time" class="item-time" value="22:00">
+					</label>
+					<label class="item item-subtitle-wrapper">
+						End Time
+						<div class="item-subtitle">Animations enabled after this time.</div>
+						<input name="power-end" type="time" class="item-time" value="07:00">
+					</label>
+					<label class="item">
+						Battery Threshold (%)
+						<div class="item-subtitle">If the battery level falls below this threshold, no animations will occur.</div>
+					</label>
+					<label class="item">
+						<input name="power-threshold" type="range" class="item-slider" value="30" step="5">
+						<div class="item-input-wrapper item-slider-text">
+							<input name="power-threshold" type="text" class="item-input" value="30">
+						</div>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					The battery level will be displayed at the top left of the screen when Low Power Mode is enabled.
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="item-container-header">Inactivity Alert</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Inactivity Period
+						<div class="item-subtitle">How long you have to be inactive before your watch vibrates to alert you.</div>
+						<select name="inactivity-period" class="item-select">
+							<option class="item-select-option" value="0" selected>15 minutes</option>
+							<option class="item-select-option" value="1">30 minutes</option>
+							<option class="item-select-option" value="2">1 hour</option>
+							<option class="item-select-option" value="3">2 hours</option>
+							<option class="item-select-option" value="4">3 hours</option>
+							<option class="item-select-option" value="5">Forever</option>
+						</select>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					Set the Inactivity Period to zero to disable this feature.
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="item-container-header">Display</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Date Format
+						<div class="item-subtitle">Hide or set the format of the date.</div>
+						<select name="display-date" class="item-select">
+							<option class="item-select-option" value="0">Hidden</option>
+							<option class="item-select-option" value="1" selected>MON 1 JAN</option>
+							<option class="item-select-option" value="2">MON JAN 1</option>
+						</select>
+					</label>
+				</div>
+			</div>
+			<div class="item-container">
+				<div class="button-container">
+					<input id="save-button" type="button" class="item-button" value="SAVE">
+				</div>
+			</div>
+		</form>
+		<script type="text/javascript" src="js/slate.min.js"></script>
+		<script>
+			$().ready(function() {
+				if (typeof window.localStorage !== "undefined") {
+					if (window.localStorage.flux) {
+						settings = JSON.parse(window.localStorage.flux);
+						$("[name=pattern-change]").val(settings["pattern-change"]);
+						$("[name=pattern-nodes]").prop("checked", settings["pattern-nodes"]);
+						$("[name=pattern-fractal]").prop("checked", settings["pattern-fractal"]);
+						$("[name=animations-frequency]").val(settings["animations-frequency"]);
+						$("[name=animations-duration]").val(settings["animations-duration"] / 10);
+						$("[name=colours-bright]").prop("checked", settings["colours-bright"]);
+						$("[name=colours-soft]").prop("checked", settings["colours-soft"]);
+						$("[name=power-start]").val(settings["power-start"]).next().text(settings["power-start-hour"] + ":" + settings["power-start-minute"]);
+						$("[name=power-end]").val(settings["power-end"]).next().text(settings["power-end-hour"] + ":" + settings["power-end-minute"]);
+						$("[name=power-threshold]").val(settings["power-threshold"]);
+						$("[name=inactivity-period]").val(settings["inactivity-period"]);
+						$("[name=display-date]").val(settings["display-date"]);
+					}
+				}
+				function saveSettings() {
+					var settings = {
+						"pattern-change": Number($("[name=pattern-change]").val()),
+						"pattern-nodes": Number($("[name=pattern-nodes]").attr("checked")),
+						"pattern-fractal": Number($("[name=pattern-fractal]").attr("checked")),
+						"animations-frequency": Number($("[name=animations-frequency]").val()),
+						"animations-duration": Number($("[name=animations-duration]").val()) * 10,
+						"colours-bright": Number($("[name=colours-bright]").attr("checked")),
+						"colours-soft": Number($("[name=colours-soft]").attr("checked")),
+						"power-start-hour": Number($("[name=power-start]").val().split(":")[0]),
+						"power-start-minute": Number($("[name=power-start]").val().split(":")[1]),
+						"power-end-hour": Number($("[name=power-end]").val().split(":")[0]),
+						"power-end-minute": Number($("[name=power-end]").val().split(":")[1]),
+						"power-threshold": Number($("[name=power-threshold]").val()),
+						"inactivity-period": Number($("[name=inactivity-period]").val()),
+						"display-date": Number($("[name=display-date]").val())
+					}
+					return settings;
+				}
+				$("#save-button").click(function() {
+					settings = JSON.stringify(saveSettings());
+					if (typeof window.localStorage !== "undefined") {
+						window.localStorage.flux = settings;
+					}
+					document.location.href = "pebblejs://close#" + encodeURIComponent(settings);
+				});
+			});
+		</script>
+	</body>
+</html>
