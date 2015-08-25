@@ -44,8 +44,9 @@ void draw_text(Layer *layer, GContext *ctx) {
 }
 
 void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+	animation_tick_handler();
 	if (units_changed & DAY_UNIT) update_date(tick_time);
-	else update_time(tick_time);
+	else if (units_changed & MINUTE_UNIT) update_time(tick_time);
 }
 
 void background_layer_mark_dirty() {
@@ -83,7 +84,6 @@ static void initialise() {
 		.load = window_load,
 		.unload = window_unload
 	});
-	tick_timer_service_subscribe(get_timer_unit_setting(), tick_handler);
 	window_stack_push(window, true);
 	begin_startup_animation();
 }
