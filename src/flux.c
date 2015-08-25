@@ -43,7 +43,7 @@ void draw_text(Layer *layer, GContext *ctx) {
 	if (get_setting(SETTING_DISPLAY_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 }
 
-static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
+void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 	if (units_changed & DAY_UNIT) update_date(tick_time);
 	else update_time(tick_time);
 }
@@ -83,9 +83,9 @@ static void initialise() {
 		.load = window_load,
 		.unload = window_unload
 	});
-	tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+	tick_timer_service_subscribe(get_timer_unit_setting(), tick_handler);
 	window_stack_push(window, true);
-	sync_animations();
+	begin_startup_animation();
 }
 
 static void cleanup() {

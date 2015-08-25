@@ -1,4 +1,20 @@
 {
+    "shortName": "Flux",
+    "longName": "Flux",
+    "companyName": "Daniel Vogelnest",
+    "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
+    "versionLabel": "0.6",
+    "sdkVersion": "3",
+    "projectType": "native",
+    "watchapp": {
+        "watchface": true
+    },
+    "targetPlatforms": [
+        "basalt"
+    ],
+    "capabilities": [
+        "configurable"
+    ],
     "appKeys": {
         "pattern-change": 0,
         "pattern-nodes": 1,
@@ -7,18 +23,14 @@
 		"animations-duration": 4,
 		"colours-bright": 5,
 		"colours-soft": 6,
-		"power-start": 7,
-		"power-end": 8,
-		"power-threshold": 9,
-		"inactivity-period": 10,
-		"display-date": 11
+		"power-start-hour": 7,
+		"power-start-minute": 8,
+		"power-end-hour": 9,
+		"power-end-minute": 10,
+		"power-threshold": 11,
+		"inactivity-period": 12,
+		"display-date": 13
     },
-    "capabilities": [
-        "configurable"
-    ],
-    "companyName": "Daniel Vogelnest",
-    "longName": "Flux",
-    "projectType": "native",
     "resources": {
         "media": [
 		    {
@@ -38,15 +50,5 @@
                 "type": "font"
             }
         ]
-    },
-    "sdkVersion": "3",
-    "shortName": "Flux",
-    "targetPlatforms": [
-        "basalt"
-    ],
-    "uuid": "3745d719-54ab-42e8-b0fa-ab4f738fab2e",
-    "versionLabel": "0.6",
-    "watchapp": {
-        "watchface": true
     }
 }

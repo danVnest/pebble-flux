@@ -2,12 +2,12 @@
 
 static uint8_t settings[SETTING_KEY_COUNT];
 static AppSync app_sync;
-static uint8_t sync_buffer[32];
+static uint8_t sync_buffer[SETTING_KEY_COUNT * (3 + 8) + 1]; // tuplet count * (3 byte key + 8 byte integer) + 1 byte header
 
 static void sync_error_handler(DictionaryResult dict_error, AppMessageResult app_message_error, void *context);
 static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, const Tuple *old_tuple, void *context);
 
-uint8_t get_setting(int key) {
+uint8_t get_setting(uint8_t key) {
 	return settings[key];
 }
 	
@@ -15,10 +15,10 @@ void sync_settings() {
 	size_t stored_byte_count = persist_get_size(STORAGE_SETTINGS);
 	if (stored_byte_count == sizeof(settings)) persist_read_data(STORAGE_SETTINGS, settings, stored_byte_count);
 	else {
-		settings[SETTING_PATTERN_CHANGE] = 3;
+		settings[SETTING_PATTERN_CHANGE] = 8;
 		settings[SETTING_PATTERN_NODES] = 1;
 		settings[SETTING_PATTERN_FRACTAL] = 1;
-		settings[SETTING_ANIMATIONS_FREQUENCY] = 4;
+		settings[SETTING_ANIMATIONS_FREQUENCY] = 8;
 		settings[SETTING_ANIMATIONS_DURATION] = 3;
 		settings[SETTING_COLOURS_BRIGHT] = 1;
 		settings[SETTING_COLOURS_SOFT] = 1;
@@ -27,7 +27,7 @@ void sync_settings() {
 		settings[SETTING_POWER_END_HOUR] = 7;
 		settings[SETTING_POWER_END_MINUTE] = 0;
 		settings[SETTING_POWER_THRESHOLD] = 30;
-		settings[SETTING_INACTIVITY_PERIOD] = 3;
+		settings[SETTING_INACTIVITY_PERIOD] = 2;
 		settings[SETTING_DISPLAY_DATE] = 1;
 	}
 	app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
@@ -58,20 +58,8 @@ void save_settings() {
 static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, const Tuple *old_tuple, void *context) {
 	if (settings[key] != new_tuple->value->uint8) {
 		settings[key] = new_tuple->value->uint8;
-		if (key == SETTING_ANIMATIONS_FREQUENCY) {
-			if (settings[key] == 0) set_animation_frequency(0xFFFF);
-			else if (settings[key] == 1) set_animation_frequency(1);
-			else if (settings[key] == 2) set_animation_frequency(15);
-			else if (settings[key] == 3) set_animation_frequency(30);
-			else if (settings[key] == 4) set_animation_frequency(60);
-			else if (settings[key] == 5) set_animation_frequency(900);
-			else if (settings[key] == 6) set_animation_frequency(1800);
-			else if (settings[key] == 7) set_animation_frequency(3600);
-			else if (settings[key] == 8) set_animation_frequency(0); 
-		}
-		else if (key == SETTING_ANIMATIONS_DURATION) {
-			set_frames_per_animation(settings[key]);
-		}
+		if (key == SETTING_ANIMATIONS_FREQUENCY) configure_animation_frequency();
+		else if (key == SETTING_ANIMATIONS_DURATION) configure_frames_per_animation();
 		else if (key == SETTING_DISPLAY_DATE) {
 			time_t raw_time = time(NULL);
 			struct tm *tick_time = localtime(&raw_time);
@@ -81,5 +69,5 @@ static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, con
 }
 
 static void sync_error_handler(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
-	APP_LOG(APP_LOG_LEVEL_ERROR, "sync error!");
+	APP_LOG(APP_LOG_LEVEL_ERROR, "sync error: %d %d", dict_error, app_message_error);
 }

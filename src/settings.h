@@ -23,6 +23,6 @@ enum SETTING_KEYS {
 	SETTING_KEY_COUNT
 };
 
-uint8_t get_setting(int key);
+uint8_t get_setting(uint8_t key);
 void sync_settings();
 void save_settings();

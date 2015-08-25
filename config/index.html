@@ -16,11 +16,16 @@
 						<div class="item-subtitle">How often the background will change betwen the patterns below.</div>
 						<select name="pattern-change" class="item-select">
 							<option class="item-select-option" value="0" selected>Every minute</option>
-							<option class="item-select-option" value="1">15 minutes</option>
-							<option class="item-select-option" value="2">30 minutes</option>
-							<option class="item-select-option" value="3">1 hour</option>
-							<option class="item-select-option" value="4">1 day</option>
-							<option class="item-select-option" value="5">Never</option>
+							<option class="item-select-option" value="1">2 minutes</option>
+							<option class="item-select-option" value="2">3 minutes</option>
+							<option class="item-select-option" value="3">4 minutes</option>
+							<option class="item-select-option" value="4">5 minutes</option>
+							<option class="item-select-option" value="5">10 minutes</option>
+							<option class="item-select-option" value="6">15 minutes</option>
+							<option class="item-select-option" value="7">30 minutes</option>
+							<option class="item-select-option" value="8">1 hour</option>
+							<option class="item-select-option" value="9">1 day</option>
+							<option class="item-select-option" value="10">Never</option>
 						</select>
 					</label>
 					<label class="item item-subtitle-wrapper">
@@ -47,13 +52,17 @@
 						<select name="animations-frequency" class="item-select">
 							<option class="item-select-option" value="0" selected>Constant</option>
 							<option class="item-select-option" value="1">Every second</option>
-							<option class="item-select-option" value="2">15 seconds</option>
-							<option class="item-select-option" value="3">30 seconds</option>
-							<option class="item-select-option" value="4">1 minute</option>
-							<option class="item-select-option" value="5">15 minutes</option>
-							<option class="item-select-option" value="6">30 minutes</option>
-							<option class="item-select-option" value="7">1 hour</option>
-							<option class="item-select-option" value="8">Never</option>
+							<option class="item-select-option" value="2">2 seconds</option>
+							<option class="item-select-option" value="3">3 seconds</option>
+							<option class="item-select-option" value="4">5 seconds</option>
+							<option class="item-select-option" value="5">10 seconds</option>
+							<option class="item-select-option" value="6">15 seconds</option>
+							<option class="item-select-option" value="7">30 seconds</option>
+							<option class="item-select-option" value="8">1 minute</option>
+							<option class="item-select-option" value="9">15 minutes</option>
+							<option class="item-select-option" value="10">30 minutes</option>
+							<option class="item-select-option" value="11">1 hour</option>
+							<option class="item-select-option" value="120">Never</option>
 						</select>
 					</label>
 					<label class="item item-subtitle-wrapper">
@@ -196,12 +205,27 @@
 					}
 					return settings;
 				}
+
+				// TODO: remove dev code getQueryParam
+				function getQueryParam(variable, defaultValue) {
+					var query = location.search.substring(1);
+					var vars = query.split('&');
+					for (var i = 0; i < vars.length; i++) {
+						var pair = vars[i].split('=');
+						if (pair[0] === variable) { return decodeURIComponent(pair[1]); }
+					}
+					return defaultValue || false;
+				}
+
 				$("#save-button").click(function() {
 					settings = JSON.stringify(saveSettings());
 					if (typeof window.localStorage !== "undefined") {
 						window.localStorage.flux = settings;
 					}
-					document.location.href = "pebblejs://close#" + encodeURIComponent(settings);
+					//document.location.href = "pebblejs://close#" + encodeURIComponent(settings);
+
+					var return_to = getQueryParam('return_to', 'pebblejs://close#');
+					document.location.href = return_to + encodeURIComponent(settings);
 				});
 			});
 		</script>
