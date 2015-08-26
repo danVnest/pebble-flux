@@ -60,7 +60,7 @@ static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, con
 		settings[key] = new_tuple->value->uint8;
 		if (key == SETTING_ANIMATIONS_FREQUENCY) configure_animation_frequency();
 		else if (key == SETTING_ANIMATIONS_DURATION) configure_frames_per_animation();
-		else if ((key >= SETTING_POWER_START_HOUR) && (key <= SETTING_POWER_END_MINUTE)) configure_low_power_mode();
+		else if ((key >= SETTING_POWER_START_HOUR) && (key <= SETTING_POWER_THRESHOLD)) configure_low_power_mode();
 		else if (key == SETTING_DISPLAY_DATE) {
 			time_t raw_time = time(NULL);
 			struct tm *tick_time = localtime(&raw_time);

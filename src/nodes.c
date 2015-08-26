@@ -27,13 +27,14 @@ static uint32_t animation_interval;
 static uint8_t animation_interval_unit;
 static bool animations_enabled;
 bool low_power_mode_time_enabled = false;
+bool low_power_mode_threshold_enabled = false;
 
 static void check_animation_status();
 static void begin_animating_nodes();
 static void animate_nodes();
 
 static void check_animation_status() {
-	if ((frames_per_animation == 0) || (animation_interval == 0) || low_power_mode_time_enabled) {
+	if ((frames_per_animation == 0) || (animation_interval == 0) || low_power_mode_time_enabled || low_power_mode_threshold_enabled) {
 		animations_enabled = false;
 		tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
    	}
@@ -45,6 +46,7 @@ static void check_animation_status() {
 		else animations_enabled = true;
 		tick_timer_service_subscribe(animation_interval_unit, tick_handler);
 	}
+	update_battery((low_power_mode_time_enabled || low_power_mode_threshold_enabled));
 }
 
 void configure_frames_per_animation() {
@@ -94,6 +96,16 @@ void configure_low_power_mode() {
 		WakeupId startid = wakeup_schedule(mktime(&start_time), LOW_POWER_MODE_START, false);
 		WakeupId endid = wakeup_schedule(mktime(&end_time), LOW_POWER_MODE_END, false); // TODO: check return values to ensure wakeup has been set
 	}
+	BatteryChargeState charge_state = battery_state_service_peek();
+	if ((charge_state.charge_percent <= get_setting(SETTING_POWER_THRESHOLD)) && (charge_state.is_charging == false)) low_power_mode_threshold_enabled = true;
+	else low_power_mode_threshold_enabled = false;
+	check_animation_status();
+}
+
+
+static void low_power_threshold_handler(BatteryChargeState charge_state) {
+	if ((charge_state.charge_percent <= get_setting(SETTING_POWER_THRESHOLD)) && (charge_state.is_charging == false)) low_power_mode_threshold_enabled = true;
+	else low_power_mode_threshold_enabled = false;
 	check_animation_status();
 }
 
@@ -117,6 +129,7 @@ void begin_startup_animation() {
 	// TODO: implement actual startup animation
 	frames_per_animation = FRAMES_PER_SECOND * get_setting(SETTING_ANIMATIONS_DURATION) / 10;
 	configure_animation_frequency();
+	battery_state_service_subscribe(low_power_threshold_handler);
 	wakeup_service_subscribe(low_power_time_handler);
 	configure_low_power_mode();
 }

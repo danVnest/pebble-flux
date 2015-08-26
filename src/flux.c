@@ -3,8 +3,10 @@
 static Window *window;
 static Layer *background_layer;
 static Layer *text_layer;
+static Layer *battery_layer;
 static char time_text[] = "00:00";
 static char date_text[] = "MON 11 JAN";
+static bool show_battery;
 static GFont time_font;
 static GFont date_font;
 
@@ -26,6 +28,11 @@ void update_date(struct tm *tick_time) {
 	update_time(tick_time);
 }
 
+void update_battery(bool show) {
+	show_battery = show;
+	layer_mark_dirty(battery_layer);
+}
+
 void draw_text(Layer *layer, GContext *ctx) {
 	graphics_context_set_text_color(ctx, GColorBlack);
 	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
@@ -43,6 +50,38 @@ void draw_text(Layer *layer, GContext *ctx) {
 	if (get_setting(SETTING_DISPLAY_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 }
 
+void draw_battery(Layer *layer, GContext *ctx) {
+	if (show_battery) { 
+		uint8_t percent = battery_state_service_peek().charge_percent;
+		char percent_text[] = "00%";		
+		percent_text[0] = percent / 10 + '0';
+		percent_text[1] = percent % 10 + '0';
+		graphics_context_set_fill_color(ctx, GColorBlack);
+		graphics_fill_rect(ctx, GRect(0, 0, 48, 21), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(48, 6, 2, 9), 0, GCornerNone);
+		graphics_context_set_fill_color(ctx, GColorWhite);
+		graphics_fill_rect(ctx, GRect(1, 1, 46, 19), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(47, 7, 2, 7), 0, GCornerNone);
+		graphics_context_set_fill_color(ctx, GColorBlack);
+		graphics_fill_rect(ctx, GRect(3, 3, 43 * (100 - percent) / 100, 15), 0, GCornerNone);
+		graphics_context_set_text_color(ctx, GColorBlack);
+		graphics_draw_text(ctx, percent_text, date_font, GRect(3, -3, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, percent_text, date_font, GRect(3, -1, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, percent_text, date_font, GRect(5, -3, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, percent_text, date_font, GRect(5, -1, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_context_set_text_color(ctx, GColorWhite);
+		graphics_draw_text(ctx, percent_text, date_font, GRect(4, -2, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	}
+	else {
+		graphics_context_set_fill_color(ctx, GColorBlack);
+		graphics_fill_rect(ctx, GRect(0, 0, 48, 21), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(48, 6, 2, 9), 0, GCornerNone);
+		graphics_context_set_fill_color(ctx, GColorWhite);
+		graphics_fill_rect(ctx, GRect(1, 1, 46, 19), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(47, 7, 2, 7), 0, GCornerNone);
+	}
+}
+
 void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 	animation_tick_handler(tick_time);
 	if (units_changed & DAY_UNIT) update_date(tick_time);
@@ -57,6 +96,7 @@ static void window_load(Window *window) {
 	window_set_background_color(window, GColorBlack);
 	background_layer = layer_create(GRect(0, 0, 144, 168));
 	text_layer = layer_create(GRect(0, 0, 144, 168));
+	battery_layer = layer_create(GRect(8, 8, 50, 21));
 	create_nodes();
 	time_t raw_time = time(NULL);
 	struct tm *tick_time = localtime(&raw_time);
@@ -66,8 +106,10 @@ static void window_load(Window *window) {
 	date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMAGINE_18));
 	layer_set_update_proc(background_layer, draw_nodes);
 	layer_set_update_proc(text_layer, draw_text);
+	layer_set_update_proc(battery_layer, draw_battery);
 	layer_add_child(window_get_root_layer(window), background_layer);
 	layer_add_child(window_get_root_layer(window), text_layer);
+	layer_add_child(window_get_root_layer(window), battery_layer);
 }
 
 static void window_unload(Window *window) {
