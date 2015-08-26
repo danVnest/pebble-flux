@@ -7,7 +7,6 @@ static char time_text[] = "00:00";
 static char date_text[] = "MON 11 JAN";
 static GFont time_font;
 static GFont date_font;
-bool low_power_mode_enabled = false;
 
 static void update_time(struct tm *tick_time);
 static void window_load(Window *window);
@@ -45,7 +44,7 @@ void draw_text(Layer *layer, GContext *ctx) {
 }
 
 void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
-	if (low_power_mode_enabled == false) animation_tick_handler(tick_time);
+	animation_tick_handler(tick_time);
 	if (units_changed & DAY_UNIT) update_date(tick_time);
 	else if (units_changed & MINUTE_UNIT) update_time(tick_time);
 }
@@ -86,8 +85,6 @@ static void initialise() {
 		.unload = window_unload
 	});
 	window_stack_push(window, true);
-	//configure_low_power_mode();
-	//begin_startup_animation(low_power_mode_enabled);
 	begin_startup_animation();
 }
 
