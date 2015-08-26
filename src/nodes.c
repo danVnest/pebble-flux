@@ -23,7 +23,6 @@ static uint8_t frame_number;
 static uint8_t frames_per_animation;
 static uint32_t animation_interval;
 static uint8_t animation_interval_unit;
-static uint8_t ticks;
 static bool animations_enabled;
 
 static void check_animation_status();
@@ -75,10 +74,6 @@ void configure_animation_frequency() {
 		case 11: animation_interval = 60; animation_interval_unit = MINUTE_UNIT; break;
 		case 12: animation_interval = 0; animation_interval_unit = MINUTE_UNIT; break;
 	}
-	time_t raw_time = time(NULL);
-	struct tm *time = localtime(&raw_time);
-	if (animation_interval_unit == SECOND_UNIT) ticks = time->tm_sec % animation_interval;
-	else ticks = time->tm_min % animation_interval;
 	check_animation_status();
 }
 
@@ -95,10 +90,9 @@ void draw_nodes(Layer *layer, GContext* ctx) {
 	}
 }
 
-void animation_tick_handler() {
+void animation_tick_handler(struct tm *tick_time) {
 	if (animations_enabled) {
-		if (++ticks >= animation_interval) {
-			ticks = 0;
+		if (((animation_interval_unit == SECOND_UNIT) && (tick_time->tm_sec % animation_interval == 0)) || ((animation_interval_unit == MINUTE_UNIT) && (tick_time->tm_min % animation_interval == 0))) {
 			begin_animating_nodes();
 		}
 	}
