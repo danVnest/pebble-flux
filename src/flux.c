@@ -12,7 +12,6 @@ static GFont date_font;
 static bool show_battery;
 static bool show_bluetooth;
 static void update_time(struct tm *tick_time);
-static void update_bluetooth(bool show);
 static void window_load(Window *window);
 static void window_unload(Window *window);
 static void initialise();
@@ -33,11 +32,6 @@ void update_date(struct tm *tick_time) {
 void update_battery(bool show) {
 	show_battery = show;
 	layer_mark_dirty(battery_layer);
-}
-
-static void update_bluetooth(bool show) {
-	show_bluetooth = show;
-	layer_mark_dirty(bluetooth_layer);
 }
 
 void draw_text(Layer *layer, GContext *ctx) {
@@ -101,7 +95,9 @@ void draw_bluetooth(Layer *layer, GContext *ctx) {
 }
 
 void bluetooth_handler(bool connected) {
-	update_bluetooth(!connected);
+	show_bluetooth = !connected && get_setting(SETTING_BLUETOOTH_ICON);
+	if (!connected && get_setting(SETTING_BLUETOOTH_VIBRATE)) vibes_short_pulse();
+	layer_mark_dirty(bluetooth_layer);
 }
 
 void tick_handler(struct tm *tick_time, TimeUnits units_changed) {

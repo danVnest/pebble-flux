@@ -127,6 +127,24 @@
 				</div>
 			</div>
 			<div class="item-container">
+				<div class="item-container-header">Bluetooth Disconnection</div>
+				<div class="item-container-content">
+					<label class="item item-subtitle-wrapper">
+						Icon
+						<div class="item-subtitle">When disconnected from phone, show an icon.</div>
+						<input name="bluetooth-icon" type="checkbox" class="item-toggle" checked>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Vibration
+						<div class="item-subtitle">Vibrate upon disconnection.</div>
+						<input name="bluetooth-vibrate" type="checkbox" class="item-toggle" checked>
+					</label>
+				</div>
+				<div class="item-container-footer">
+					If the watch is in lower power mode no disconnection vibration will occur, regardless of the Vibration setting.
+				</div>
+			</div>
+			<div class="item-container">
 				<div class="item-container-header">Inactivity Alert</div>
 				<div class="item-container-content">
 					<label class="item item-subtitle-wrapper">
@@ -182,6 +200,8 @@
 						$("[name=power-start]").val(settings["power-start"]).next().text(settings["power-start-hour"] + ":" + settings["power-start-minute"]);
 						$("[name=power-end]").val(settings["power-end"]).next().text(settings["power-end-hour"] + ":" + settings["power-end-minute"]);
 						$("[name=power-threshold]").val(settings["power-threshold"]);
+						$("[name=bluetooth-icon]").val(settings["bluetooth-icon"]);
+						$("[name=bluetooth-vibrate]").val(settings["bluetooth-vibrate"]);
 						$("[name=inactivity-period]").val(settings["inactivity-period"]);
 						$("[name=display-date]").val(settings["display-date"]);
 					}
@@ -200,6 +220,8 @@
 						"power-end-hour": Number($("[name=power-end]").val().split(":")[0]),
 						"power-end-minute": Number($("[name=power-end]").val().split(":")[1]),
 						"power-threshold": Number($("[name=power-threshold]").val()),
+						"bluetooth-icon": Number($("[name=bluetooth-icon]").val()),
+						"bluetooth-vibrate": Number($("[name=bluetooth-vibrate]").val()),
 						"inactivity-period": Number($("[name=inactivity-period]").val()),
 						"display-date": Number($("[name=display-date]").val())
 					}
