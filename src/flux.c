@@ -54,9 +54,12 @@ void draw_text(Layer *layer, GContext *ctx) {
 void draw_battery(Layer *layer, GContext *ctx) {
 	if (show_battery) { 
 		uint8_t percent = battery_state_service_peek().charge_percent;
-		char percent_text[] = "00%";		
-		percent_text[0] = percent / 10 + '0';
-		percent_text[1] = percent % 10 + '0';
+		char percent_text[] = "10%";		
+		if (percent == 100) percent_text[2] = '0';
+		else {
+			percent_text[0] = percent / 10 + '0';
+			percent_text[1] = percent % 10 + '0';
+		}
 		graphics_context_set_fill_color(ctx, GColorBlack);
 		graphics_fill_rect(ctx, GRect(0, 0, 48, 21), 0, GCornerNone);
 		graphics_fill_rect(ctx, GRect(48, 6, 2, 9), 0, GCornerNone);
