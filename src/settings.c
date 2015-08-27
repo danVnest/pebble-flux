@@ -61,6 +61,7 @@ void save_settings() {
 
 static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, const Tuple *old_tuple, void *context) {
 	if (settings[key] != new_tuple->value->uint8) {
+		// APP_LOG(APP_LOG_LEVEL_DEBUG, "key: %d; value: %d; old: %d", (int)key, new_tuple->value->unit8, settings[key]);
 		settings[key] = new_tuple->value->uint8;
 		if (key == SETTING_ANIMATIONS_FREQUENCY) configure_animation_frequency();
 		else if (key == SETTING_ANIMATIONS_DURATION) configure_frames_per_animation();
