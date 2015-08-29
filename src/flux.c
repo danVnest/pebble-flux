@@ -15,15 +15,23 @@ static GFont date_font;
 static bool show_battery = false;
 static bool show_bluetooth = false;
 static bool show_inactivity = false;
+static bool inactivity_alert_enabled;
 static uint32_t activity_this_minute = 0;
 static uint32_t activity_window_sum = 0;
 static uint32_t activity_window[ACTIVITY_WINDOW_SIZE] = {0};
 static uint8_t current_activity_index = 0;
 static uint8_t inactivity_period = 0;
+static uint8_t inactivity_period_max;
+static uint8_t inactivity_period_repeat;
+static uint32_t activity_threshold;
 
 static void update_time(struct tm *tick_time);
 static void window_load(Window *window);
 static void window_unload(Window *window);
+static void draw_battery(Layer *layer, GContext *ctx);
+static void draw_bluetooth(Layer *layer, GContext *ctx);
+static void draw_inactivity(Layer *layer, GContext *ctx);
+static void activity_handler(AccelRawData *data, uint32_t num_samples, uint64_t timestamp);
 static void initialise();
 static void cleanup();	
 
@@ -36,6 +44,7 @@ static void update_time(struct tm *tick_time) {
 void update_date(struct tm *tick_time) {
 	if (get_setting(SETTING_DISPLAY_DATE) == 1) strftime(date_text, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
 	else if (get_setting(SETTING_DISPLAY_DATE) == 2) strftime(date_text, sizeof("MON JAN 11"), "%a %b %e", tick_time);
+	else date_text[0] = '!';
 }
 
 void update_battery(bool show) {
@@ -49,7 +58,7 @@ void draw_text(Layer *layer, GContext *ctx) {
 	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (get_setting(SETTING_DISPLAY_DATE) != 0) {
+	if (date_text[0] != '!') {
 		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
@@ -57,7 +66,7 @@ void draw_text(Layer *layer, GContext *ctx) {
 	}	
 	graphics_context_set_text_color(ctx, GColorWhite);
 	graphics_draw_text(ctx, time_text, time_font, GRect(2, 54, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (get_setting(SETTING_DISPLAY_DATE) != 0) graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	if (date_text[0] != '!') graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 }
 
 static void draw_battery(Layer *layer, GContext *ctx) {
@@ -108,9 +117,9 @@ static void draw_bluetooth(Layer *layer, GContext *ctx) {
 
 static void draw_inactivity(Layer *layer, GContext *ctx) {
 	if (show_inactivity) { 
-		int32_t activity_level = activity_window_sum - 1000000;
+		int32_t activity_level = activity_window_sum - activity_threshold / 3;
 		if (activity_level < 0) activity_level = 0;
-		activity_level = activity_level * 60 / 1000000;
+		activity_level = activity_level * 60 * 3 / 2 / activity_threshold;
 		graphics_context_set_fill_color(ctx, GColorBlack);
 		graphics_fill_rect(ctx, GRect(0, 10, 62, 4), 0, GCornerNone);
 		graphics_fill_rect(ctx, GRect(0, 0, 2 + activity_level, 3), 0, GCornerNone);
@@ -130,25 +139,62 @@ static void draw_inactivity(Layer *layer, GContext *ctx) {
 	}
 }
 
+void configure_inactivity_alert() {
+	switch (get_setting(SETTING_INACTIVITY_PERIOD)) {
+		case 0:	inactivity_period_max = 15; break;
+		case 1:	inactivity_period_max = 30; break;
+		case 2:	inactivity_period_max = 60; break;
+		case 3:	inactivity_period_max = 120; break;
+		case 4:	inactivity_period_max = 180; break;
+		case 5:	inactivity_period_max = 0; break;
+	}
+	switch (get_setting(SETTING_INACTIVITY_REPEAT)) {
+		case 0:	inactivity_period_repeat = 1; break;
+		case 1:	inactivity_period_repeat = 5; break;
+		case 2:	inactivity_period_repeat = 10; break;
+		case 3:	inactivity_period_repeat = 15; break;
+		case 4:	inactivity_period_repeat = 30; break;
+		case 5:	inactivity_period_repeat = 60; break;
+		case 6:	inactivity_period_repeat = inactivity_period_max; break;
+	}
+	switch (get_setting(SETTING_INACTIVITY_THRESHOLD)) {
+		case 0:	activity_threshold = 1000000; break;
+		case 1:	activity_threshold = 2000000; break;
+		case 2:	activity_threshold = 3000000; break;
+		case 3:	activity_threshold = 4000000; break;
+	}
+	if (inactivity_period_max != 0) {
+		if (inactivity_alert_enabled == false) {
+			accel_raw_data_service_subscribe(25, activity_handler);
+			accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
+			inactivity_alert_enabled = true;
+		}
+	}
+	else if (inactivity_alert_enabled == true) {
+		accel_data_service_unsubscribe();
+		inactivity_alert_enabled = false;
+	}
+	if (inactivity_period_repeat > 0) inactivity_period_repeat = inactivity_period_max;
+}
+
 static void check_activity() {
 	if (++current_activity_index >= ACTIVITY_WINDOW_SIZE) current_activity_index = 0;
 	activity_window_sum += activity_this_minute - activity_window[current_activity_index];
 	activity_window[current_activity_index] = activity_this_minute;
 	activity_this_minute = 0;
-	if (activity_window_sum > 2000000) {
+	if (activity_window_sum >= activity_threshold) {
 		inactivity_period = 0;
 		if (show_inactivity) {
 			show_inactivity = false;
 			layer_mark_dirty(inactivity_layer);
 		}
 	}
-	else if (++inactivity_period >= 10) {
+	else if (++inactivity_period >= inactivity_period_max) {
 		vibes_short_pulse();
-		inactivity_period = 5;
+		inactivity_period = inactivity_period_max - inactivity_period_repeat;
 		show_inactivity = true;
 	}
 	if (show_inactivity) layer_mark_dirty(inactivity_layer);
-	//APP_LOG(APP_LOG_LEVEL_INFO, "1m: %d; 5m: %d", (int)activity_window[current_activity_index], (int)activity_window_sum);
 }
 
 static void activity_handler(AccelRawData *data, uint32_t num_samples, uint64_t timestamp) {
@@ -174,7 +220,7 @@ void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
 	if (units_changed & DAY_UNIT) update_date(tick_time);
 	if (units_changed & MINUTE_UNIT) {
 	   	update_time(tick_time);
-		check_activity();
+		if (inactivity_alert_enabled) check_activity();
 	}
 }
 
@@ -213,6 +259,7 @@ static void window_unload(Window *window) {
 	layer_destroy(text_layer);
 	layer_destroy(battery_layer);
 	layer_destroy(bluetooth_layer);
+	layer_destroy(inactivity_layer);
 	fonts_unload_custom_font(time_font);
 	fonts_unload_custom_font(date_font);
 }
@@ -226,8 +273,7 @@ static void initialise() {
 	});
 	window_stack_push(window, true);
 	bluetooth_connection_service_subscribe(bluetooth_handler);
-	accel_raw_data_service_subscribe(25, activity_handler);
-	accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
+	configure_inactivity_alert();
 	begin_startup_animation();
 }
 

@@ -30,6 +30,8 @@ void sync_settings() {
 		settings[SETTING_BLUETOOTH_ICON] = 1;
 		settings[SETTING_BLUETOOTH_VIBRATE] = 1;
 		settings[SETTING_INACTIVITY_PERIOD] = 2;
+		settings[SETTING_INACTIVITY_REPEAT] = 1;
+		settings[SETTING_INACTIVITY_THRESHOLD] = 1;
 		settings[SETTING_DISPLAY_DATE] = 1;
 	}
 	app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
@@ -49,6 +51,8 @@ void sync_settings() {
 		TupletInteger(SETTING_BLUETOOTH_ICON, settings[SETTING_BLUETOOTH_ICON]),
 		TupletInteger(SETTING_BLUETOOTH_VIBRATE, settings[SETTING_BLUETOOTH_VIBRATE]),
 		TupletInteger(SETTING_INACTIVITY_PERIOD, settings[SETTING_INACTIVITY_PERIOD]),
+		TupletInteger(SETTING_INACTIVITY_REPEAT, settings[SETTING_INACTIVITY_REPEAT]),
+		TupletInteger(SETTING_INACTIVITY_THRESHOLD, settings[SETTING_INACTIVITY_THRESHOLD]),
 		TupletInteger(SETTING_DISPLAY_DATE, settings[SETTING_DISPLAY_DATE])
 	};
 	app_sync_init(&app_sync, sync_buffer, sizeof(sync_buffer), settings_sync, ARRAY_LENGTH(settings_sync), sync_changed_handler, sync_error_handler, NULL);
@@ -66,6 +70,7 @@ static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, con
 		if (key == SETTING_ANIMATIONS_FREQUENCY) configure_animation_frequency();
 		else if (key == SETTING_ANIMATIONS_DURATION) configure_frames_per_animation();
 		else if ((key >= SETTING_POWER_START_HOUR) && (key <= SETTING_POWER_THRESHOLD)) configure_low_power_mode();
+		else if ((key >= SETTING_INACTIVITY_PERIOD) && (key <= SETTING_INACTIVITY_THRESHOLD)) configure_inactivity_alert();
 		else if (key == SETTING_DISPLAY_DATE) {
 			time_t raw_time = time(NULL);
 			struct tm *tick_time = localtime(&raw_time);

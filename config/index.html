@@ -141,7 +141,7 @@
 					</label>
 				</div>
 				<div class="item-container-footer">
-					If the watch is in lower power mode no disconnection vibration will occur, regardless of the Vibration setting.
+					No disconnect vibration will occur when in Low Power Mode, regardless of the Vibration setting.
 				</div>
 			</div>
 			<div class="item-container">
@@ -151,17 +151,41 @@
 						Inactivity Period
 						<div class="item-subtitle">How long you have to be inactive before your watch vibrates to alert you.</div>
 						<select name="inactivity-period" class="item-select">
-							<option class="item-select-option" value="0" selected>15 minutes</option>
+							<option class="item-select-option" value="0">15 minutes</option>
 							<option class="item-select-option" value="1">30 minutes</option>
-							<option class="item-select-option" value="2">1 hour</option>
+							<option class="item-select-option" value="2" selected>1 hour</option>
 							<option class="item-select-option" value="3">2 hours</option>
 							<option class="item-select-option" value="4">3 hours</option>
 							<option class="item-select-option" value="5">Forever</option>
 						</select>
 					</label>
+					<label class="item item-subtitle-wrapper">
+						Repeat Alert
+						<div class="item-subtitle">How frequently the watch will vibrate after the first alert.</div>
+						<select name="inactivity-repeat" class="item-select">
+							<option class="item-select-option" value="0">Every minute</option>
+							<option class="item-select-option" value="1" selected>5 minutes</option>
+							<option class="item-select-option" value="2">10 minutes</option>
+							<option class="item-select-option" value="3">15 minutes</option>
+							<option class="item-select-option" value="4">30 minutes</option>
+							<option class="item-select-option" value="5">1 hour</option>
+							<option class="item-select-option" value="6">No repeat</option>
+						</select>
+					</label>
+					<label class="item item-subtitle-wrapper">
+						Activity Intensity
+						<div class="item-subtitle">The level of activity required to reset the Inactivity Period.</div>
+						<select name="inactivity-threshold" class="item-select">
+							<option class="item-select-option" value="0">Light</option>
+							<option class="item-select-option" value="1" selected>Moderate</option>
+							<option class="item-select-option" value="2">High</option>
+							<option class="item-select-option" value="3">Extreme</option>
+						</select>
+					</label>
 				</div>
 				<div class="item-container-footer">
-					Set the Inactivity Period to zero to disable this feature.
+					No alerts will be made when in Low Power Mode. Set the Inactivity Period to Forever to disable this feature.
+					A barbell icon will be shown after the Inactivity Period, and then a progress bar will be displayed above the icon when you are being active.
 				</div>
 			</div>
 			<div class="item-container">
@@ -203,6 +227,8 @@
 						$("[name=bluetooth-icon]").prop("checked", settings["bluetooth-icon"]);
 						$("[name=bluetooth-vibrate]").prop("checked", settings["bluetooth-vibrate"]);
 						$("[name=inactivity-period]").val(settings["inactivity-period"]);
+						$("[name=inactivity-repeat]").val(settings["inactivity-repeat"]);
+						$("[name=inactivity-threshold]").val(settings["inactivity-threshold"]);
 						$("[name=display-date]").val(settings["display-date"]);
 					}
 				}
@@ -223,6 +249,8 @@
 						"bluetooth-icon": Number($("[name=bluetooth-icon]").attr("checked")),
 						"bluetooth-vibrate": Number($("[name=bluetooth-vibrate]").attr("checked")),
 						"inactivity-period": Number($("[name=inactivity-period]").val()),
+						"inactivity-repeat": Number($("[name=inactivity-repeat]").val()),
+						"inactivity-threshold": Number($("[name=inactivity-threshold]").val()),
 						"display-date": Number($("[name=display-date]").val())
 					}
 					return settings;

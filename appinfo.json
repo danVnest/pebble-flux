@@ -31,7 +31,9 @@
 		"bluetooth-icon": 12,
 		"bluetooth-vibrate": 13,
 		"inactivity-period": 14,
-		"display-date": 15
+		"inactivity-repeat": 15,
+		"inactivity-threshold": 16,
+		"display-date": 17
     },
     "resources": {
         "media": [
