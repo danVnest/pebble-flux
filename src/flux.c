@@ -48,7 +48,10 @@ void update_date(struct tm *tick_time) {
 }
 
 void update_battery(bool show) {
-	show_battery = show;
+	if (show_battery != show) {
+		configure_inactivity_alert();
+		show_battery = show;
+	}
 	layer_mark_dirty(battery_layer);
 }
 
@@ -163,7 +166,7 @@ void configure_inactivity_alert() {
 		case 2:	activity_threshold = 3000000; break;
 		case 3:	activity_threshold = 4000000; break;
 	}
-	if (inactivity_period_max != 0) {
+	if ((inactivity_period_max != 0) && (show_battery == false)) {
 		if (inactivity_alert_enabled == false) {
 			accel_raw_data_service_subscribe(25, activity_handler);
 			accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
