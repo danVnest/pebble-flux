@@ -178,6 +178,7 @@ void configure_inactivity_alert() {
 		inactivity_alert_enabled = false;
 	}
 	if (inactivity_period_repeat > 0) inactivity_period_repeat = inactivity_period_max;
+	layer_mark_dirty(inactivity_layer);
 }
 
 static void check_activity() {
@@ -267,6 +268,26 @@ static void window_unload(Window *window) {
 	fonts_unload_custom_font(date_font);
 }
 
+static void load_state() {
+	if ((inactivity_alert_enabled == true) && (show_battery == false)) {
+		if (time(NULL) < persist_read_int(STORAGE_STATE_TIME) + 60 * 60) {
+			show_inactivity = persist_read_bool(STORAGE_INACTIVITY_SHOWN);
+			inactivity_period = persist_read_int(STORAGE_INACTIVITY_PERIOD);
+			persist_read_data(STORAGE_ACTIVITY_WINDOW, activity_window, sizeof(activity_window));
+			for (uint8_t i = 0; i < ACTIVITY_WINDOW_SIZE; i++) activity_window_sum += activity_window[i];
+		}
+	}
+}
+
+static void save_state() {
+	if ((inactivity_alert_enabled == true) && (show_battery == false)) {
+		persist_write_int(STORAGE_STATE_TIME, time(NULL));
+		persist_write_bool(STORAGE_INACTIVITY_SHOWN, true);
+		persist_write_int(STORAGE_INACTIVITY_PERIOD, inactivity_period);
+		persist_write_data(STORAGE_ACTIVITY_WINDOW, activity_window, sizeof(activity_window));
+	}
+}
+
 static void initialise() {
 	sync_settings();
 	window = window_create();
@@ -278,6 +299,7 @@ static void initialise() {
 	bluetooth_connection_service_subscribe(bluetooth_handler);
 	configure_inactivity_alert();
 	begin_startup_animation();
+	load_state();
 }
 
 static void cleanup() {
@@ -287,6 +309,7 @@ static void cleanup() {
 	bluetooth_connection_service_unsubscribe();
 	window_destroy(window);
 	save_settings();
+	save_state();
 }
 
 int main(void) {
