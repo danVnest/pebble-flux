@@ -157,7 +157,7 @@ static void begin_animating_nodes() {
 }
 
 static void animate_nodes() {
-	if (frame_number++ < frames_per_animation) animation_timer = app_timer_register(FRAME_DURATION, animate_nodes, NULL);
+	if (++frame_number < frames_per_animation) animation_timer = app_timer_register(FRAME_DURATION, animate_nodes, NULL);
 	else if ((animation_interval == 0xFF) && (animations_enabled)) animation_timer = app_timer_register(FRAME_DURATION, begin_animating_nodes, NULL);
 	for (int i = 0; i < NODE_COUNT; i++) {
 		if ((nodes[i].x < 0) && (node_changes[i].x < 0)) node_changes[i].x *= -1;
