@@ -1,10 +1,77 @@
 #include "flux.h"
 
+#define WINDOW_WIDTH 144
+#define WINDOW_HEIGHT 168
+#define TIME_POS_X 0
+#define TIME_POS_Y 50
+#define TIME_WIDTH WINDOW_WIDTH
+#define TIME_HEIGHT 44
+#define TIME_BORDER 2
+#define DATE_POS_X 0
+#define DATE_POS_Y 139
+#define DATE_WIDTH 142
+#define DATE_HEIGHT 20
+#define DATE_BORDER 1
+#define BATTERY_POS_X 8
+#define BATTERY_POS_Y 8
+#define BATTERY_WIDTH 46
+#define BATTERY_HEIGHT 21
+#define BATTERY_THICKNESS 2
+#define BATTERY_BUMP_POS_Y 6
+#define BATTERY_BUMP_WIDTH 2
+#define BATTERY_BUMP_HEIGHT 9
+#define BATTERY_BORDER 1
+#define BATTERY_TEXT_POS_Y -3
+#define BATTERY_TEXT_HEIGHT 20
+#define BATTERY_TEXT_BORDER 1
+#define BATTERY_WIDTH_NB (BATTERY_WIDTH - BATTERY_BORDER * 2)
+#define BATTERY_HEIGHT_NB (BATTERY_HEIGHT - BATTERY_BORDER * 2)
+#define BATTERY_BUMP_HEIGHT_NB (BATTERY_BUMP_HEIGHT - BATTERY_BORDER * 2)
+#define BLUETOOTH_POS_Y 4
+#define BLUETOOTH_WIDTH 21
+#define BLUETOOTH_HEIGHT 50
+#define BLUETOOTH_OFFSET_Y 4
+#define BLUETOOTH_THICKNESS_X 2
+#define BLUETOOTH_THICKNESS_Y 6
+#define BLUETOOTH_BORDER 1
+#define BLUETOOTH_BUTTON_WIDTH 3
+#define BLUETOOTH_BUTTON_HEIGHT 2
+#define BLUETOOTH_LINE_BORDER 5
+#define BLUETOOTH_LINE_STROKE 1
+#define BLUETOOTH_LINE_OFFSET 2
+#define BLUETOOTH_POS_X (WINDOW_WIDTH - BLUETOOTH_WIDTH - BLUETOOTH_POS_Y * 2)
+#define BLUETOOTH_BUTTON_POS_X ((BLUETOOTH_WIDTH - BLUETOOTH_BUTTON_WIDTH) / 2)
+#define BLUETOOTH_BUTTON_POS_Y (BLUETOOTH_HEIGHT - BLUETOOTH_BORDER - BLUETOOTH_OFFSET_Y - BLUETOOTH_THICKNESS_Y / 2 - BLUETOOTH_BUTTON_HEIGHT / 2)
+#define BLUETOOTH_WIDTH_NB (BLUETOOTH_WIDTH - BLUETOOTH_BORDER * 2)
+#define BLUETOOTH_HEIGHT_NBO (BLUETOOTH_HEIGHT - BLUETOOTH_BORDER * 2 - BLUETOOTH_OFFSET_Y * 2)
 #define ACTIVITY_WINDOW_SIZE 5
+#define ACTIVITY_DISPLAY_THRESHOLD 3
+#define ACTIVITY_POS_Y 110
+#define ACTIVITY_WIDTH 62
+#define ACTIVITY_HEIGHT 19
+#define ACTIVITY_OFFSET_Y 10
+#define ACTIVITY_BAR_THICKNESS 2
+#define ACTIVITY_BORDER 1
+#define ACTIVITY_LEVEL_THICKNESS 1
+#define ACTIVITY_WEIGHT_SMALL_HEIGHT 10
+#define ACTIVITY_WEIGHT_LARGE_HEIGHT 14
+#define ACTIVITY_WEIGHT_WIDTH 5
+#define ACTIVITY_WEIGHT_GAP -1
+#define ACTIVITY_POS_X ((WINDOW_WIDTH - ACTIVITY_WIDTH) / 2)
+#define ACTIVITY_WEIGHT_OFFSET_X (1 + ACTIVITY_BORDER)
+#define ACTIVITY_WEIGHT_OFFSET_Y (ACTIVITY_OFFSET_Y + ACTIVITY_BAR_THICKNESS)
+#define ACTIVITY_WIDTH_NB (ACTIVITY_WIDTH - ACTIVITY_BORDER * 2)
+#define ACTIVITY_WEIGHT_WIDTH_NB (ACTIVITY_WEIGHT_WIDTH - ACTIVITY_BORDER * 2)
+#define graphics_draw_text_border(ctx, text, font, x, y, width, height, border) { \
+	graphics_draw_text((ctx), (text), (font), GRect((x), (y), (width), (height)), GTextOverflowModeFill, GTextAlignmentCenter, NULL); \
+	graphics_draw_text((ctx), (text), (font), GRect((x), (y) + (border) * 2, (width), (height)), GTextOverflowModeFill, GTextAlignmentCenter, NULL); \
+	graphics_draw_text((ctx), (text), (font), GRect((x) + (border) * 2, (y), (width), (height)), GTextOverflowModeFill, GTextAlignmentCenter, NULL); \
+	graphics_draw_text((ctx), (text), (font), GRect((x) + (border) * 2, (y) + (border) * 2, (width), (height)), GTextOverflowModeFill, GTextAlignmentCenter, NULL); }
 	
 static Window *window;
 static Layer *background_layer;
-static Layer *text_layer;
+static Layer *time_layer;
+static Layer *date_layer;
 static Layer *battery_layer;
 static Layer *bluetooth_layer;
 static Layer *inactivity_layer;
@@ -38,13 +105,14 @@ static void cleanup();
 static void update_time(struct tm *tick_time) {
 	if(clock_is_24h_style() == false) strftime(time_text, sizeof("00:00"), "%l:%M", tick_time);
 	else strftime(time_text, sizeof("00:00"), "%k:%M", tick_time);
-	layer_mark_dirty(text_layer);
+	layer_mark_dirty(time_layer);
 }
 
 void update_date(struct tm *tick_time) {
 	if (get_setting(SETTING_DISPLAY_DATE) == 1) strftime(date_text, sizeof("MON 11 JAN"), "%a %e %b", tick_time);
 	else if (get_setting(SETTING_DISPLAY_DATE) == 2) strftime(date_text, sizeof("MON JAN 11"), "%a %b %e", tick_time);
 	else date_text[0] = '!';
+	layer_mark_dirty(date_layer);
 }
 
 void update_battery(bool show) {
@@ -55,90 +123,86 @@ void update_battery(bool show) {
 	layer_mark_dirty(battery_layer);
 }
 
-void draw_text(Layer *layer, GContext *ctx) {
+void draw_time(Layer *layer, GContext *ctx) {
 	graphics_context_set_text_color(ctx, GColorBlack);
-	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(0, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 - 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	graphics_draw_text(ctx, time_text, time_font, GRect(4, 54 + 2, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (date_text[0] != '!') {
-		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(0, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 - 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, date_text, date_font, GRect(2, 140 + 1, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	}	
+	graphics_draw_text_border(ctx, time_text, time_font, 0, 0, TIME_WIDTH, TIME_HEIGHT, TIME_BORDER);
 	graphics_context_set_text_color(ctx, GColorWhite);
-	graphics_draw_text(ctx, time_text, time_font, GRect(2, 54, 140, 40), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-	if (date_text[0] != '!') graphics_draw_text(ctx, date_text, date_font, GRect(1, 140, 142, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	graphics_draw_text(ctx, time_text, time_font, GRect(TIME_BORDER, TIME_BORDER, TIME_WIDTH, TIME_HEIGHT), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+}
+
+void draw_date(Layer *layer, GContext *ctx) {
+	if (date_text[0] != '!') {
+		graphics_context_set_text_color(ctx, GColorBlack);
+		graphics_draw_text_border(ctx, date_text, date_font, 0, 0, DATE_WIDTH, DATE_HEIGHT, DATE_BORDER);
+		graphics_context_set_text_color(ctx, GColorWhite);
+		graphics_draw_text(ctx, date_text, date_font, GRect(DATE_BORDER, DATE_BORDER, DATE_WIDTH, DATE_HEIGHT), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+	}
 }
 
 static void draw_battery(Layer *layer, GContext *ctx) {
 	if (show_battery) { 
 		uint8_t percent = battery_state_service_peek().charge_percent;
-		char percent_text[] = "10%";		
-		if (percent == 100) percent_text[2] = '0';
+		char battery_text[] = "10%";		
+		if (percent == 100) battery_text[2] = '0';
 		else {
-			percent_text[0] = percent / 10 + '0';
-			percent_text[1] = percent % 10 + '0';
+			battery_text[0] = percent / 10 + '0';
+			battery_text[1] = percent % 10 + '0';
 		}
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(0, 0, 48, 21), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(48, 6, 2, 9), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(0, 0, BATTERY_WIDTH, BATTERY_HEIGHT), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BATTERY_WIDTH, BATTERY_BUMP_POS_Y, BATTERY_BUMP_WIDTH, BATTERY_BUMP_HEIGHT), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorWhite);
-		graphics_fill_rect(ctx, GRect(1, 1, 46, 19), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(47, 7, 2, 7), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BATTERY_BORDER, BATTERY_BORDER, BATTERY_WIDTH_NB, BATTERY_HEIGHT_NB), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BATTERY_WIDTH - BATTERY_BORDER, BATTERY_BUMP_POS_Y + BATTERY_BORDER, BATTERY_BUMP_WIDTH, BATTERY_BUMP_HEIGHT_NB), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(3, 3, 43 * (100 - percent) / 100, 15), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BATTERY_BORDER + BATTERY_THICKNESS, BATTERY_BORDER + BATTERY_THICKNESS, (BATTERY_WIDTH_NB - BATTERY_THICKNESS * 2) * (100 - percent) / 100, BATTERY_HEIGHT_NB - BATTERY_THICKNESS * 2), 0, GCornerNone);
 		graphics_context_set_text_color(ctx, GColorBlack);
-		graphics_draw_text(ctx, percent_text, date_font, GRect(3, -3, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, percent_text, date_font, GRect(3, -1, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, percent_text, date_font, GRect(5, -3, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
-		graphics_draw_text(ctx, percent_text, date_font, GRect(5, -1, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text_border(ctx, battery_text, date_font, 0, BATTERY_TEXT_POS_Y, BATTERY_WIDTH, BATTERY_TEXT_HEIGHT, BATTERY_TEXT_BORDER);
 		graphics_context_set_text_color(ctx, GColorWhite);
-		graphics_draw_text(ctx, percent_text, date_font, GRect(4, -2, 44, 20), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
+		graphics_draw_text(ctx, battery_text, date_font, GRect(BATTERY_TEXT_BORDER, BATTERY_TEXT_POS_Y + BATTERY_TEXT_BORDER, BATTERY_WIDTH, BATTERY_TEXT_HEIGHT), GTextOverflowModeFill, GTextAlignmentCenter, NULL);
 	}
 }
 
 static void draw_bluetooth(Layer *layer, GContext *ctx) {
 	if (show_bluetooth) { 
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(0, 4, 21, 40), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(0, BLUETOOTH_OFFSET_Y, BLUETOOTH_WIDTH, BLUETOOTH_HEIGHT - BLUETOOTH_OFFSET_Y * 2), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorWhite);
-		graphics_fill_rect(ctx, GRect(1, 5, 19, 38), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BLUETOOTH_BORDER, BLUETOOTH_OFFSET_Y + BLUETOOTH_BORDER, BLUETOOTH_WIDTH_NB, BLUETOOTH_HEIGHT_NBO), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(3, 11, 15, 26), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(9, 39, 3, 2), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BLUETOOTH_BORDER + BLUETOOTH_THICKNESS_X, BLUETOOTH_OFFSET_Y + BLUETOOTH_BORDER + BLUETOOTH_THICKNESS_Y, BLUETOOTH_WIDTH_NB - BLUETOOTH_THICKNESS_X * 2, BLUETOOTH_HEIGHT_NBO - BLUETOOTH_THICKNESS_Y * 2), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(BLUETOOTH_BUTTON_POS_X, BLUETOOTH_BUTTON_POS_Y, BLUETOOTH_BUTTON_WIDTH, BLUETOOTH_BUTTON_HEIGHT), 0, GCornerNone);
 		graphics_context_set_antialiased(ctx, false);
 		graphics_context_set_stroke_color(ctx, GColorBlack);
-		graphics_context_set_stroke_width(ctx, 5);
-		graphics_draw_line(ctx, GPoint(2, 2), GPoint(19, 46));
+		graphics_context_set_stroke_width(ctx, BLUETOOTH_LINE_BORDER);
+		graphics_draw_line(ctx, GPoint(BLUETOOTH_LINE_OFFSET, BLUETOOTH_LINE_OFFSET), GPoint(BLUETOOTH_WIDTH - BLUETOOTH_LINE_OFFSET * 2 + BLUETOOTH_LINE_STROKE, BLUETOOTH_HEIGHT - BLUETOOTH_LINE_OFFSET * 2 + BLUETOOTH_LINE_STROKE));
 		graphics_context_set_stroke_color(ctx, GColorWhite);
-		graphics_context_set_stroke_width(ctx, 1);
-		graphics_draw_line(ctx, GPoint(2, 2), GPoint(19, 46));
+		graphics_context_set_stroke_width(ctx, BLUETOOTH_LINE_STROKE);
+		graphics_draw_line(ctx, GPoint(BLUETOOTH_LINE_OFFSET, BLUETOOTH_LINE_OFFSET), GPoint(BLUETOOTH_WIDTH - BLUETOOTH_LINE_OFFSET * 2 + BLUETOOTH_LINE_STROKE, BLUETOOTH_HEIGHT - BLUETOOTH_LINE_OFFSET * 2 + BLUETOOTH_LINE_STROKE));
 	}
 }
 
 static void draw_inactivity(Layer *layer, GContext *ctx) {
 	if (show_inactivity) { 
-		int32_t activity_level = activity_window_sum - activity_threshold / 3;
+		int32_t activity_level = activity_window_sum - activity_threshold / ACTIVITY_DISPLAY_THRESHOLD;
 		if (activity_level < 0) activity_level = 0;
-		activity_level = activity_level * 60 * 3 / 2 / activity_threshold;
+		activity_level = activity_level * ACTIVITY_WIDTH * ACTIVITY_DISPLAY_THRESHOLD / (ACTIVITY_DISPLAY_THRESHOLD - 1) / activity_threshold;
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(0, 10, 62, 4), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(0, 0, 2 + activity_level, 3), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(0, ACTIVITY_OFFSET_Y, ACTIVITY_WIDTH, ACTIVITY_BAR_THICKNESS + ACTIVITY_BORDER * 2), 0, GCornerNone);
+		if (activity_level > 0) graphics_fill_rect(ctx, GRect(0, 0, ACTIVITY_BORDER * 2 + activity_level, ACTIVITY_BORDER * 2 + ACTIVITY_LEVEL_THICKNESS), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorWhite);
-		graphics_fill_rect(ctx, GRect(1, 11, 60, 2), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(1, 1, activity_level, 1), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_BORDER, ACTIVITY_OFFSET_Y + ACTIVITY_BORDER, ACTIVITY_WIDTH_NB, ACTIVITY_BAR_THICKNESS), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_BORDER, ACTIVITY_BORDER, activity_level, ACTIVITY_LEVEL_THICKNESS), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorBlack);
-		graphics_fill_rect(ctx, GRect(2, 7, 5, 10), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(6, 5, 5, 14), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(51, 5, 5, 14), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(55, 7, 5, 10), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WEIGHT_OFFSET_X, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_SMALL_HEIGHT / 2, ACTIVITY_WEIGHT_WIDTH, ACTIVITY_WEIGHT_SMALL_HEIGHT), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WEIGHT_OFFSET_X + ACTIVITY_WEIGHT_WIDTH + ACTIVITY_WEIGHT_GAP, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_LARGE_HEIGHT / 2, ACTIVITY_WEIGHT_WIDTH, ACTIVITY_WEIGHT_LARGE_HEIGHT), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WIDTH - ACTIVITY_WEIGHT_OFFSET_X - ACTIVITY_WEIGHT_WIDTH * 2 - ACTIVITY_WEIGHT_GAP, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_LARGE_HEIGHT / 2, ACTIVITY_WEIGHT_WIDTH, ACTIVITY_WEIGHT_LARGE_HEIGHT), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WIDTH - ACTIVITY_WEIGHT_OFFSET_X - ACTIVITY_WEIGHT_WIDTH, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_SMALL_HEIGHT / 2, ACTIVITY_WEIGHT_WIDTH, ACTIVITY_WEIGHT_SMALL_HEIGHT), 0, GCornerNone);
 		graphics_context_set_fill_color(ctx, GColorWhite);
-		graphics_fill_rect(ctx, GRect(3, 8, 3, 8), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(7, 6, 3, 12), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(52, 6, 3, 12), 0, GCornerNone);
-		graphics_fill_rect(ctx, GRect(56, 8, 3, 8), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WEIGHT_OFFSET_X + ACTIVITY_BORDER, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_SMALL_HEIGHT / 2 + ACTIVITY_BORDER, ACTIVITY_WEIGHT_WIDTH_NB, ACTIVITY_WEIGHT_SMALL_HEIGHT - ACTIVITY_BORDER * 2), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WEIGHT_OFFSET_X + ACTIVITY_WEIGHT_WIDTH + ACTIVITY_WEIGHT_GAP + ACTIVITY_BORDER, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_LARGE_HEIGHT / 2 + ACTIVITY_BORDER, ACTIVITY_WEIGHT_WIDTH_NB, ACTIVITY_WEIGHT_LARGE_HEIGHT - ACTIVITY_BORDER * 2), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WIDTH - ACTIVITY_WEIGHT_OFFSET_X - ACTIVITY_WEIGHT_WIDTH * 2 - ACTIVITY_WEIGHT_GAP + ACTIVITY_BORDER, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_LARGE_HEIGHT / 2 + ACTIVITY_BORDER, ACTIVITY_WEIGHT_WIDTH_NB, ACTIVITY_WEIGHT_LARGE_HEIGHT - ACTIVITY_BORDER * 2), 0, GCornerNone);
+		graphics_fill_rect(ctx, GRect(ACTIVITY_WIDTH - ACTIVITY_WEIGHT_OFFSET_X - ACTIVITY_WEIGHT_WIDTH + ACTIVITY_BORDER, ACTIVITY_WEIGHT_OFFSET_Y - ACTIVITY_WEIGHT_SMALL_HEIGHT / 2 + ACTIVITY_BORDER, ACTIVITY_WEIGHT_WIDTH_NB, ACTIVITY_WEIGHT_SMALL_HEIGHT - ACTIVITY_BORDER * 2), 0, GCornerNone);
 	}
 }
 
@@ -234,11 +298,12 @@ void background_layer_mark_dirty() {
 
 static void window_load(Window *window) {
 	window_set_background_color(window, GColorBlack);
-	background_layer = layer_create(GRect(0, 0, 144, 168));
-	text_layer = layer_create(GRect(0, 0, 144, 168));
-	battery_layer = layer_create(GRect(8, 8, 50, 21));
-	bluetooth_layer = layer_create(GRect(144 - 21 - 8, 4, 21, 50));
-	inactivity_layer = layer_create(GRect((144 - 62) / 2, 110, 62, 19));
+	background_layer = layer_create(GRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+	time_layer = layer_create(GRect(0, TIME_POS_Y, WINDOW_WIDTH, WINDOW_HEIGHT));
+	date_layer = layer_create(GRect(0, DATE_POS_Y, WINDOW_WIDTH, WINDOW_HEIGHT));
+	battery_layer = layer_create(GRect(BATTERY_POS_X, BATTERY_POS_Y, BATTERY_WIDTH + BATTERY_BUMP_WIDTH, BATTERY_HEIGHT));
+	bluetooth_layer = layer_create(GRect(BLUETOOTH_POS_X, BLUETOOTH_POS_Y, BLUETOOTH_WIDTH, BLUETOOTH_HEIGHT));
+	inactivity_layer = layer_create(GRect(ACTIVITY_POS_X, ACTIVITY_POS_Y, ACTIVITY_WIDTH, ACTIVITY_HEIGHT));
 	create_nodes();
 	time_t raw_time = time(NULL);
 	struct tm *tick_time = localtime(&raw_time);
@@ -247,12 +312,14 @@ static void window_load(Window *window) {
 	time_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMAGINE_38));
 	date_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_IMAGINE_18));
 	layer_set_update_proc(background_layer, draw_nodes);
-	layer_set_update_proc(text_layer, draw_text);
+	layer_set_update_proc(time_layer, draw_time);
+	layer_set_update_proc(date_layer, draw_date);
 	layer_set_update_proc(battery_layer, draw_battery);
 	layer_set_update_proc(bluetooth_layer, draw_bluetooth);
 	layer_set_update_proc(inactivity_layer, draw_inactivity);
 	layer_add_child(window_get_root_layer(window), background_layer);
-	layer_add_child(window_get_root_layer(window), text_layer);
+	layer_add_child(window_get_root_layer(window), time_layer);
+	layer_add_child(window_get_root_layer(window), date_layer);
 	layer_add_child(window_get_root_layer(window), battery_layer);
 	layer_add_child(window_get_root_layer(window), bluetooth_layer);
 	layer_add_child(window_get_root_layer(window), inactivity_layer);
@@ -260,7 +327,8 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
 	layer_destroy(background_layer);
-	layer_destroy(text_layer);
+	layer_destroy(time_layer);
+	layer_destroy(date_layer);
 	layer_destroy(battery_layer);
 	layer_destroy(bluetooth_layer);
 	layer_destroy(inactivity_layer);
