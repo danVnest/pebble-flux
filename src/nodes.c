@@ -26,6 +26,7 @@ static uint8_t frames_per_animation;
 static uint32_t animation_interval;
 static uint8_t animation_interval_unit;
 static bool animations_enabled;
+static GColor8 color_palette[5];
 bool low_power_mode_time_enabled = false;
 bool low_power_mode_threshold_enabled = false;
 
@@ -137,6 +138,7 @@ void begin_startup_animation() {
 void animation_tick_handler(struct tm *tick_time) {
 	if (animations_enabled) {
 		if (((animation_interval_unit == SECOND_UNIT) && (tick_time->tm_sec % animation_interval == 0)) || ((animation_interval_unit == MINUTE_UNIT) && (tick_time->tm_min % animation_interval == 0))) {
+			randomise_color_palette(color_palette);
 			begin_animating_nodes();
 		}
 	}
@@ -172,8 +174,8 @@ static void animate_nodes() {
 }
 
 void draw_nodes(Layer *layer, GContext* ctx) {
-	graphics_context_set_fill_color(ctx, GColorWhite);
-	graphics_context_set_stroke_color(ctx, GColorBlack);
+	graphics_context_set_fill_color(ctx, color_palette[C_PATTERN_1]);
+	graphics_context_set_stroke_color(ctx, color_palette[C_PATTERN_2]);
 	graphics_context_set_stroke_width(ctx, 1);
 	for(int i = 0; i < NODE_COUNT; i++) {
 		int node_x = nodes[i].x / INT_PRECISION;
