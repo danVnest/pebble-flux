@@ -1,0 +1,21 @@
+#pragma once
+#include <pebble.h>
+
+#define BATTERY_POS_X 8
+#define BATTERY_POS_Y 8
+#define BATTERY_WIDTH 46
+#define BATTERY_HEIGHT 21
+#define BATTERY_THICKNESS 2
+#define BATTERY_BUMP_POS_Y 6
+#define BATTERY_BUMP_WIDTH 2
+#define BATTERY_BUMP_HEIGHT 9
+#define BATTERY_BORDER 1
+#define BATTERY_TEXT_POS_Y -3
+#define BATTERY_TEXT_HEIGHT 20
+#define BATTERY_TEXT_BORDER 1
+#define BATTERY_WIDTH_NB (BATTERY_WIDTH - BATTERY_BORDER * 2)
+#define BATTERY_HEIGHT_NB (BATTERY_HEIGHT - BATTERY_BORDER * 2)
+#define BATTERY_BUMP_HEIGHT_NB (BATTERY_BUMP_HEIGHT - BATTERY_BORDER * 2)
+
+void configure_low_power_mode();
+void update_battery(bool show);

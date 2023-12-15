@@ -82,3 +82,16 @@ static void sync_changed_handler(const uint32_t key, const Tuple *new_tuple, con
 static void sync_error_handler(DictionaryResult dict_error, AppMessageResult app_message_error, void *context) {
 	APP_LOG(APP_LOG_LEVEL_ERROR, "sync error: %d %d", dict_error, app_message_error);
 }
+
+static GColor8 random_color() {
+	  return (GColor8) { .argb = ((rand() % 0b00111111) + 0b11000000) };
+}
+
+void randomise_color_palette(GColor8 *palette) {
+	palette[C_BACKGROUND] = random_color();
+	palette[C_TEXT] = gcolor_legible_over(palette[C_BACKGROUND]);
+	palette[C_BORDER] = (GColor8) { .argb = palette[C_BACKGROUND].argb & (palette[C_TEXT].argb ^ 0b00101010)};
+	palette[C_PATTERN_1] = random_color();
+	palette[C_PATTERN_2] = random_color();
+	window_set_background_color(window, palette[C_BACKGROUND]);
+}
